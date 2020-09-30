@@ -1,30 +1,37 @@
-name: Build and Deploy GitHub Pages
-on:
-  #on:
-  #  paths:
-  #    - '**.js'
-  push:
-    branches:
-      - master
+  
+name: Pass the artifact
+
+on: [pull_request]
+
 jobs:
-  build-and-deploy:
+  job_1:
+    name: Create File
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout 🛎️
-        uses: actions/checkout@v2.3.1 # If you're using actions/checkout@v2 you must set persist-credentials to false in most cases for the deployment to work correctly.
-        with:
-          persist-credentials: false
-
-      - name: Copy Markdown Files 📋
+      - name: Create a file
         run: |
-          mkdir build
-          cp *.md build
-        
-      - name: Deploy 🚀
-        uses: JamesIves/github-pages-deploy-action@3.6.1
+          echo "Hello World" > hello.txt
+      - name: Upload the file
+        uses: actions/upload-artifact@v2
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: gh-pages # The branch the action should deploy to.
-          FOLDER: build # The folder the action should deploy.
-          CLEAN: true # Automatically remove deleted files from the deploy branch
-          SINGLE_COMMIT: true 
+          name: bundle
+          path: hello.txt
+
+  job_2:
+    name: Echo and modify the file
+    needs: job_1
+    runs-on: windows-latest
+    steps:
+      - name: Download the bundle
+        uses: actions/download-artifact@v2
+        with:
+          name: bundle
+      - name: Echo and modify
+        run: |
+          cat hello.txt
+          echo "More" >> hello.txt
+      - name: Upload the file (again)
+        uses: actions/upload-artifact@v2
+        with:
+          name: bundle
+          path: hello.txt
